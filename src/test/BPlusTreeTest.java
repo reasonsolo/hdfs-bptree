@@ -16,9 +16,11 @@ public class BPlusTreeTest
     BPlusTree<String, Long, BattingBPlusRecord> tree;
     
     @Before
-    public void setUp() throws FileNotFoundException
+    public void setUp() throws FileNotFoundException, IOException
     {
-        tree = new BPlusTree<String, Long, BattingBPlusRecord>(4, new BattingBPlusConverter(), null);
+        //tree = new BPlusTree<String, Long, BattingBPlusRecord>(4, new BattingBPlusConverter(), null);
+        tree = new BPlusTree<String, Long, BattingBPlusRecord>(4, 
+                new BattingBPlusConverter(), null, "BPlusTree.bin", null, null);
     }
     
     @Test

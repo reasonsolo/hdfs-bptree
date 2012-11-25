@@ -43,11 +43,34 @@ public class BPlusTree<KeyType extends Comparable<? super KeyType>, ValueType, R
      * @param logger
      * @throws FileNotFoundException
      */
-    public BPlusTree(int m, Converter<KeyType, ValueType> converter, BufferedWriter logger) throws FileNotFoundException
+    public BPlusTree(int m, Converter<KeyType, ValueType> converter, BufferedWriter logger) 
+            throws FileNotFoundException, IOException
     {
         this.M = m;
         root = new BPlusLeaf<KeyType, ValueType>(m - 1);
         treeFile = new BPlusTreeFile<KeyType, ValueType>(m, converter);
+        this.logger = logger;
+    }
+    
+    /**
+     * Sets m and the logger, initializes the tree file with the converter. 
+     * If both hdfsfilename and conf are not null, btreefile will use assigned hdfs file
+     * and ignore local file
+     * @param m
+     * @param converter
+     * @param logger
+     * @param localfilename
+     * @param hdfsfilename 
+     * @param conf
+     * @throws FileNotFoundException
+     */
+    public BPlusTree(int m, Converter<KeyType, ValueType> converter, BufferedWriter logger,
+            String localfilename, String hdfsfilename, Configuration conf) 
+                    throws FileNotFoundException, IOException
+    {
+        this.M = m;
+        root = new BPlusLeaf<KeyType, ValueType>(m - 1);
+        treeFile = new BPlusTreeFile<KeyType, ValueType>(m, converter, localfilename, hdfsfilename, conf);
         this.logger = logger;
     }
     

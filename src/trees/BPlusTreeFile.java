@@ -40,7 +40,7 @@ public class BPlusTreeFile<KeyType extends Comparable<? super KeyType>, ValueTyp
 
     private String localFileName;
 
-    private String hdfsPath;
+    private String hdfsFileName;
 
     private HdfsFile hdfsFile;
 
@@ -56,8 +56,8 @@ public class BPlusTreeFile<KeyType extends Comparable<? super KeyType>, ValueTyp
      * @throws FileNotFoundException
      */
     public BPlusTreeFile(int m, Converter<KeyType, ValueType> converter)
-            throws FileNotFoundException {
-        localFileName = DEFAULT_FILE_NAME + '.' + System.currentTimeMillis();
+            throws FileNotFoundException, IOException {
+        localFileName = DEFAULT_FILE_NAME;
         hdfsFile = null;
         localFile = new RandomAccessFile(localFileName, "rw");
         M = m;
@@ -68,10 +68,29 @@ public class BPlusTreeFile<KeyType extends Comparable<? super KeyType>, ValueTyp
                 BPlusTreeFile.calculateInternalNodeSize(m, converter));
     }
 
+    public BPlusTreeFile(int m, Converter<KeyType, ValueType> converter, String localfilename, String hdfsfilename, Configuration conf)
+            throws FileNotFoundException, IOException {
+        localFileName = localfilename;
+        hdfsFileName = hdfsfilename;
+        M = m;
+        if (hdfsfilename != null && conf != null)
+        {
+            hdfsFile = new HdfsFile(hdfsfilename, conf);
+            synced = true;
+        } else {
+            localFile = new RandomAccessFile(localFileName, "rw");
+            synced = false;
+        }
+        this.converter = converter;
+        LENGTH_OF_NODE_BYTES = Math.max(
+                BPlusTreeFile.calculateLeafSize(m, converter),
+                BPlusTreeFile.calculateInternalNodeSize(m, converter));
+    }
+    
     public void setupHdfs(String path, Configuration conf) throws IOException {
         if (hdfsFile == null) {
-            hdfsPath = path;
-            hdfsFile = new HdfsFile(hdfsPath, conf);
+            hdfsFileName = path;
+            hdfsFile = new HdfsFile(hdfsFileName, conf);
         }
     }
 
