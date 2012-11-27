@@ -1,9 +1,0 @@
-import	1920to1939.csv
-import_batting	Batting1920to1939.csv
-show_batting_details_for	cadorle01
-show_batting_summary_for_range	cadorle01	caithge01
-show_batting_summary_for_range	millebi02	moorewi01
-show_batting_summary_for_range	haa	had
-remove	cadorle01
-show_batting_details_for	cadorle01
-exit

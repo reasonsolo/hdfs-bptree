@@ -99,7 +99,9 @@ public class BPlusTreeFile<KeyType extends Comparable<? super KeyType>, ValueTyp
             if (hdfsFile == null) {
                 throw new IOException("Please setup hdfs first");
             }
+            System.err.println("synchronizing");
             hdfsFile.copyLocalToHdfs(localFileName);
+            System.err.println("file synced");
             synced = true;
         }
         return synced;
