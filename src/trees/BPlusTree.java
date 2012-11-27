@@ -50,6 +50,7 @@ public class BPlusTree<KeyType extends Comparable<? super KeyType>, ValueType, R
         root = new BPlusLeaf<KeyType, ValueType>(m - 1);
         treeFile = new BPlusTreeFile<KeyType, ValueType>(m, converter);
         this.logger = logger;
+        keepRoot();
     }
     
     /**
@@ -69,8 +70,13 @@ public class BPlusTree<KeyType extends Comparable<? super KeyType>, ValueType, R
                     throws FileNotFoundException, IOException
     {
         this.M = m;
-        root = new BPlusLeaf<KeyType, ValueType>(m - 1);
         treeFile = new BPlusTreeFile<KeyType, ValueType>(m, converter, localfilename, hdfsfilename, conf);
+        try {
+            root = treeFile.getRoot();
+        } catch (ArrayIndexOutOfBoundsException e) {
+            System.err.println("Array Exception");
+            root = new BPlusLeaf<KeyType, ValueType>(m - 1);  
+        }
         this.logger = logger;
     }
     
@@ -97,6 +103,7 @@ public class BPlusTree<KeyType extends Comparable<? super KeyType>, ValueType, R
         {
             root = treeFile.readNode(((BPlusInternalNode<KeyType>)root).getChildren()[0]);
         }
+        keepRoot();
     }
     
     public void syncToHdfs(String path, Configuration conf) throws IOException 
@@ -513,6 +520,19 @@ public class BPlusTree<KeyType extends Comparable<? super KeyType>, ValueType, R
     }
 
     /**
+     * Keep root in disk file
+     * @throws IOException
+     */
+    public void keepRoot() throws IOException {
+        System.err.print("keep root");
+        if (root.isLeaf()) {
+            treeFile.writeLeaf((BPlusLeaf<KeyType, ValueType>)root, -1);
+        } else {
+            treeFile.writeInternalNode((BPlusInternalNode<KeyType>)root, -1);
+        }
+    }
+    
+    /**
      * Public method for inserting a record into the tree.
      * @param record
      * @throws IOException
@@ -529,6 +549,7 @@ public class BPlusTree<KeyType extends Comparable<? super KeyType>, ValueType, R
             newRootChildren[1] = upRightChildOffset;
             root = new BPlusInternalNode<KeyType>(newRootKeys, 1, newRootChildren, 2);
         }
+        keepRoot();
     }
 
     /**

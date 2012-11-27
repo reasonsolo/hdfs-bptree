@@ -3,6 +3,7 @@ package trees;
 import java.io.IOException;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.conf.Configuration;
@@ -14,9 +15,10 @@ public class HdfsFile {
         path_ = new Path(filename);
     }
     
-    private void open() throws IOException {
+    public void open() throws IOException {
         //out_ = fs_.append(path_);
         in_ = fs_.open(path_);
+        status_ = fs_.getFileStatus(path_);
     }
     
     public void write(byte[] buffer, int offset, int length) throws IOException {
@@ -37,11 +39,17 @@ public class HdfsFile {
     }
     
     public void read(long position, byte[] buffer, int offset, int length) throws IOException {
+        if (position < 0) {
+            position = status_.getLen() + position;
+        }
         in_.read(position, buffer, offset, length);
+//        System.err.println(new String(buffer, "ascii") + " " + length + " "
+//                + buffer.length + " " + in_.getPos());
     }
     
     private FileSystem fs_;
     private Path path_;
     private FSDataInputStream in_;
+    private FileStatus status_;
     //private FSDataOutputStream out_;
 }

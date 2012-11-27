@@ -68,14 +68,15 @@ public class BPlusTreeFile<KeyType extends Comparable<? super KeyType>, ValueTyp
                 BPlusTreeFile.calculateInternalNodeSize(m, converter));
     }
 
-    public BPlusTreeFile(int m, Converter<KeyType, ValueType> converter, String localfilename, String hdfsfilename, Configuration conf)
+    public BPlusTreeFile(int m, Converter<KeyType, ValueType> converter,
+            String localfilename, String hdfsfilename, Configuration conf)
             throws FileNotFoundException, IOException {
         localFileName = localfilename;
         hdfsFileName = hdfsfilename;
         M = m;
-        if (hdfsfilename != null && conf != null)
-        {
+        if (hdfsfilename != null && conf != null) {
             hdfsFile = new HdfsFile(hdfsfilename, conf);
+            hdfsFile.open();
             synced = true;
         } else {
             localFile = new RandomAccessFile(localFileName, "rw");
@@ -86,7 +87,24 @@ public class BPlusTreeFile<KeyType extends Comparable<? super KeyType>, ValueTyp
                 BPlusTreeFile.calculateLeafSize(m, converter),
                 BPlusTreeFile.calculateInternalNodeSize(m, converter));
     }
+
+    public BPlusNode<KeyType> getRoot() throws IOException {
+        byte[] bytes = readBytes(-1);
+        BPlusNode<KeyType> rt = null;
+        try {
+            rt = getInternalNode(bytes);
+        } catch(Exception e) {
+            rt = getLeaf(bytes);
+        }
+        if (rt.isLeaf()) {
+            rt = getLeaf(bytes);
+        } else {
+            rt = getInternalNode(bytes);
+        }
+        return rt;
+    }
     
+
     public void setupHdfs(String path, Configuration conf) throws IOException {
         if (hdfsFile == null) {
             hdfsFileName = path;
@@ -140,7 +158,11 @@ public class BPlusTreeFile<KeyType extends Comparable<? super KeyType>, ValueTyp
      * @throws IOException
      */
     private byte[] readBytes(long offset) throws IOException {
-
+        if (offset < 0) {
+            offset = 0;
+        } else {
+            offset += LENGTH_OF_NODE_BYTES;
+        }
         byte[] bytes = new byte[LENGTH_OF_NODE_BYTES];
         if (!synced) {
             long oldOffset = localFile.getFilePointer();
@@ -337,6 +359,12 @@ public class BPlusTreeFile<KeyType extends Comparable<? super KeyType>, ValueTyp
             long offset, boolean alreadyInFile) throws IOException {
         if (synced)
             throw new IOException("File has been synced to hdfs");
+        System.err.println(offset);
+        if (offset < 0) {
+            offset = 0;
+        } else {
+            offset += LENGTH_OF_NODE_BYTES;
+        }
         byte[] bytesToWrite = new byte[LENGTH_OF_NODE_BYTES];
         byte[] tempArray;
         int arrayCursor = 0;
@@ -409,7 +437,12 @@ public class BPlusTreeFile<KeyType extends Comparable<? super KeyType>, ValueTyp
             boolean alreadyInFile) throws IOException {
         if (synced)
             throw new IOException("File has been synced to hdfs");
-        
+        System.err.println(offset);
+        if (offset < 0) {
+            offset = 0;
+        } else {
+            offset += LENGTH_OF_NODE_BYTES;
+        }
         byte[] bytesToWrite = new byte[LENGTH_OF_NODE_BYTES];
         byte[] tempArray;
         int arrayCursor = 0;
@@ -466,7 +499,7 @@ public class BPlusTreeFile<KeyType extends Comparable<? super KeyType>, ValueTyp
             localFile.write(bytesToWrite);
         }
     }
-    
+
     // method reimplementation
     public long getFilePointer() throws IOException {
         if (synced)
@@ -474,6 +507,10 @@ public class BPlusTreeFile<KeyType extends Comparable<? super KeyType>, ValueTyp
         return localFile.getFilePointer();
     }
 
+    public int getNodeLength() {
+        return LENGTH_OF_NODE_BYTES;
+    }
+    
     private static int bytesToInt(byte[] bytes) {
         ByteBuffer buffer = ByteBuffer.wrap(bytes);
         return buffer.getInt();
