@@ -17,7 +17,7 @@ import util.HiveBPlusRecord;
 
 import org.apache.hadoop.conf.Configuration;
 
-public class HDFSBTreeTest {
+public class HiveIndexer {
 
     /**
      * @param args

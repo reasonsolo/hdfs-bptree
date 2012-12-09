@@ -359,7 +359,7 @@ public class BPlusTreeFile<KeyType extends Comparable<? super KeyType>, ValueTyp
             long offset, boolean alreadyInFile) throws IOException {
         if (synced)
             throw new IOException("File has been synced to hdfs");
-        System.err.println(offset);
+        //System.err.println(offset);
         if (offset < 0) {
             offset = 0;
         } else {
@@ -437,7 +437,7 @@ public class BPlusTreeFile<KeyType extends Comparable<? super KeyType>, ValueTyp
             boolean alreadyInFile) throws IOException {
         if (synced)
             throw new IOException("File has been synced to hdfs");
-        System.err.println(offset);
+        //System.err.println(offset);
         if (offset < 0) {
             offset = 0;
         } else {
@@ -455,6 +455,7 @@ public class BPlusTreeFile<KeyType extends Comparable<? super KeyType>, ValueTyp
         IntBuffer intBuffer = byteBuffer.asIntBuffer();
         intBuffer.put(toWrite.getNumKeys());
         tempArray = byteBuffer.array();
+        //System.out.println(tempArray.length + " "  + bytesToWrite.length + " " + arrayCursor);
         System.arraycopy(tempArray, 0, bytesToWrite, arrayCursor, 4);
         arrayCursor += 4;
 
@@ -463,6 +464,7 @@ public class BPlusTreeFile<KeyType extends Comparable<? super KeyType>, ValueTyp
         for (int i = 0; i < toWrite.getNumKeys(); i++, arrayCursor += converter
                 .getKeyLength()) {
             tempArray = converter.keyToBytes(keys[i]);
+            //System.out.println(tempArray.length + " "  + bytesToWrite.length + " " + arrayCursor + " " + converter.getKeyLength());
             System.arraycopy(tempArray, 0, bytesToWrite, arrayCursor,
                     converter.getKeyLength());
         }

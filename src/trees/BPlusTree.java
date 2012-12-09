@@ -524,7 +524,7 @@ public class BPlusTree<KeyType extends Comparable<? super KeyType>, ValueType, R
      * @throws IOException
      */
     public void keepRoot() throws IOException {
-        System.err.print("keep root");
+        //System.err.print("keep root");
         if (root.isLeaf()) {
             treeFile.writeLeaf((BPlusLeaf<KeyType, ValueType>)root, -1);
         } else {

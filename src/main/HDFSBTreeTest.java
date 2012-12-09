@@ -13,6 +13,7 @@ import util.BattingBPlusRecord;
 import util.BPlusRecord;
 import util.BPlusConverter;
 import util.Converter;
+import util.HiveBPlusRecord;
 
 import org.apache.hadoop.conf.Configuration;
 
@@ -36,10 +37,10 @@ public class HDFSBTreeTest {
                         args[1],
                         null);
         for (int i = 0; i < 100; ++i) {
-            tree.insert(new BPlusRecord<String, String>("a" + i, "" + i));
+            tree.insert(new HiveBPlusRecord("a" + i, "" + i));
        }
         for (int i = 0; i < 100; ++i) {
-            tree.insert(new BPlusRecord<String, String>("a" + i, "" + (i + 1)));
+            tree.insert(new HiveBPlusRecord("a" + i, "" + (i + 1)));
         }
         tree.printTree();
         
@@ -51,9 +52,9 @@ public class HDFSBTreeTest {
             System.out.println("search a" + i + " " + tree.search("a" + i));
         }
         for (int i = 0; i < 100; ++i) {
-            List<Long> results = tree.getRange("a" + i, "a" + i);
+            List<String> results = tree.getRange("a" + i, "a" + i);
             System.out.print("a" + i + ": ");
-            for (Long result: results) {
+            for (String result: results) {
                 System.out.print(" " + result);
             }
             System.out.println();
